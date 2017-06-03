@@ -46,7 +46,7 @@ def mentors_by_country():
     table = dm.run_query(sql_query)
     title = 'Mentors by country page'
     header = ('Country', 'Mentor Count')
-    return render_template('print_table.html', title=title, header=header, table=table)    
+    return render_template('print_table.html', title=title, header=header, table=table)
 
 
 @app.route('/contacts')
@@ -59,7 +59,21 @@ def contacts():
     table = dm.run_query(sql_query)
     title = 'Contacts page'
     header = ('School', 'Contact First Name', 'Last Name')
-    return render_template('print_table.html', title=title, header=header, table=table)    
+    return render_template('print_table.html', title=title, header=header, table=table)
+
+
+@app.route('/applicants')
+def applicants():
+    sql_query = """
+    SELECT a.first_name, a.application_code, a_m.creation_date
+        FROM applicants a LEFT OUTER JOIN applicants_mentors a_m
+        ON (a.id = a_m.applicant_id)
+    WHERE a_m.creation_date > '2016-01-01'
+    ORDER BY a_m.creation_date DESC;"""
+    table = dm.run_query(sql_query)
+    title = 'Applicants page'
+    header = ('Applicant First Name', 'Application Code', 'Creation Date')
+    return render_template('print_table.html', title=title, header=header, table=table)
 
 
 if __name__ == '__main__':
