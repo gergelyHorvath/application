@@ -34,5 +34,20 @@ def all_school():
     header = ('First Name', 'Last Name', 'School Name', 'Country')
     return render_template('print_table.html', title=title, header=header, table=table)
 
+
+@app.route('/mentors-by-country')
+def mentors_by_country():
+    sql_query = """
+    SELECT s.country, COUNT(*) AS mentor_count
+        FROM mentors m JOIN schools s
+        ON (m.city = s.city)
+    GROUP BY s.country
+    ORDER BY s.country;"""
+    table = dm.run_query(sql_query)
+    title = 'Mentors by country page'
+    header = ('Country', 'Mentor Count')
+    return render_template('print_table.html', title=title, header=header, table=table)    
+
+
 if __name__ == '__main__':
     app.run(debug=True)
