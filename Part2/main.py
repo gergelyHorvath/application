@@ -21,5 +21,18 @@ def mentors():
     header = ('First Name', 'Last Name', 'School Name', 'Country')
     return render_template('print_table.html', title=title, header=header, table=table)
 
+
+@app.route('/all-school')
+def all_school():
+    sql_query = """
+    SELECT m.first_name, m.last_name, s.name, s.country
+        FROM mentors m RIGHT OUTER JOIN schools s
+        ON (m.city = s.city)
+    ORDER BY m.id;"""
+    table = dm.run_query(sql_query)
+    title = "All the schools page"
+    header = ('First Name', 'Last Name', 'School Name', 'Country')
+    return render_template('print_table.html', title=title, header=header, table=table)
+
 if __name__ == '__main__':
     app.run(debug=True)
