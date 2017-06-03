@@ -76,5 +76,20 @@ def applicants():
     return render_template('print_table.html', title=title, header=header, table=table)
 
 
+@app.route('/applicants-and-mentors')
+def applicants_and_mentors():
+    sql_query = """
+    SELECT a.first_name, a.application_code, m.first_name, m.last_name
+        FROM ((applicants a LEFT OUTER JOIN applicants_mentors a_m
+        ON (a.id = a_m.applicant_id))
+            LEFT OUTER JOIN mentors m
+            ON (a_m.mentor_id = m.id))
+    ORDER BY a_m.applicant_id;"""
+    table = dm.run_query(sql_query)
+    title = 'Applicants and mentors page'
+    header = ('Applicant First Name', 'Application Code', 'Mentor First Name', 'Last Name')
+    return render_template('print_table.html', title=title, header=header, table=table)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
