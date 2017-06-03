@@ -49,5 +49,18 @@ def mentors_by_country():
     return render_template('print_table.html', title=title, header=header, table=table)    
 
 
+@app.route('/contacts')
+def contacts():
+    sql_query = """
+    SELECT s.name, m.first_name, m.last_name
+        FROM schools s LEFT OUTER JOIN mentors m
+        ON (s.contact_person = m.id)
+    ORDER BY s.name;"""
+    table = dm.run_query(sql_query)
+    title = 'Contacts page'
+    header = ('School', 'Contact First Name', 'Last Name')
+    return render_template('print_table.html', title=title, header=header, table=table)    
+
+
 if __name__ == '__main__':
     app.run(debug=True)
