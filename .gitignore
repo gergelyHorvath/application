@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .vscode
+priveate_connection_data.txt 
 
 # OS-X
 .DS_Store
