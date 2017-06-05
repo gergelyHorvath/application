@@ -1,5 +1,5 @@
 import data_manager as dm
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 
 app = Flask(__name__)
 
@@ -79,7 +79,7 @@ def applicants():
 @app.route('/applicants-and-mentors')
 def applicants_and_mentors():
     sql_query = """
-    SELECT a.first_name, a.application_code, COALESCE(m.first_name, 'No mentor yet'), COALESCE(m.last_name, 'None yet')
+    SELECT a.first_name, a.application_code, COALESCE(m.first_name, 'None yet'), COALESCE(m.last_name, 'None yet')
         FROM ((applicants a LEFT OUTER JOIN applicants_mentors a_m
         ON (a.id = a_m.applicant_id))
             LEFT OUTER JOIN mentors m
@@ -105,6 +105,8 @@ def full_tables():
 @app.route('/full-tables/print')
 def print_full_tables():
     choice = request.args['radio']
+    if choice not in ('mentors', 'applicants'):
+        return redirect('/')
     sql_query = """
     SELECT * FROM {};""".format(choice)
     table = dm.run_query(sql_query)
@@ -130,8 +132,8 @@ def print_nicks_from_city():
     choice = request.args['radio']
     sql_query = """
     SELECT nick_name FROM mentors
-    WHERE city='{}';""".format(choice)
-    table = dm.run_query(sql_query)
+    WHERE city=%s;"""
+    table = dm.run_query(sql_query, (choice,))
     title = 'All the mentors from {}'.format(choice)
     header = ('Nick Name',)
     return render_template('print_table.html', title=title, header=header, table=table)
@@ -150,8 +152,8 @@ def print_app_by_fn():
     choice = request.args['input0']
     sql_query = """
     SELECT CONCAT (first_name,' ', last_name) AS full_name, phone_number FROM applicants
-    WHERE first_name ILIKE '%{}%';""".format(choice)
-    table = dm.run_query(sql_query)
+    WHERE first_name ILIKE %s;"""
+    table = dm.run_query(sql_query, ('%' + choice + '%',))
     title = 'Applicants with the first name: {}'.format(choice)
     header = ('Name', 'Phone Number')
     return render_template('print_table.html', title=title, header=header, table=table)
@@ -170,11 +172,39 @@ def print_app_by_mail():
     choice = request.args['input0']
     sql_query = """
     SELECT CONCAT (first_name,' ', last_name) AS full_name, phone_number FROM applicants
-    WHERE email ILIKE '%{}%';""".format(choice)
-    table = dm.run_query(sql_query)
-    title = 'Applicants with their email adress containing {}'.format(choice)
+    WHERE email ILIKE %s;"""
+    table = dm.run_query(sql_query, ('%' + choice + '%',))
+    title = 'Applicants with their email address containing {}'.format(choice)
     header = ('Name', 'Phone Number')
     return render_template('print_table.html', title=title, header=header, table=table)
+
+
+@app.route('/add-new-applicant')
+def add_new_applicant():
+    question = ('First Name:', 'Last Name:', 'Phone Number:', 'Email Address:', 'Application Code:')
+    text = ('Markus', 'Schaffarzyk', '003620/725-2666', 'djnovus@groovecoverage.com', 54823)
+    path_to_go = '/add-new-applicant/commit'
+    return render_template('input.html', question=question, text=text, path_to_go=path_to_go)
+
+
+@app.route('/add-new-applicant/commit')
+def save_new_applicant():
+    choice = [_input for _input in request.args.values()]
+    try:
+        choice[-1] = int(choice[-1])
+    except:
+        message = 'The application code must be an integer!'
+        return render_template('errors.html', message=message)
+    app_codes = [code[0] for code in dm.run_query("SELECT application_code FROM applicants")]
+    if choice[-1] in app_codes:
+        message = 'There already is an applicant with the application code: {}'.format(choice[-1])
+        return render_template('errors.html', message=message)
+    choice = tuple(choice)
+    sql_query = """
+    INSERT INTO applicants (first_name, last_name, phone_number, email, application_code)
+    VALUES (%s, %s, %s, %s, %s);"""
+    dm.run_query(sql_query, variables=choice, with_reurnvalue=False)
+    return redirect('/full-tables/print?radio=applicants')
 
 
 if __name__ == '__main__':

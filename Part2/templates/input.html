@@ -24,7 +24,7 @@
         
         {% if text %}
             {% for inputs in text %}
-                <p>{{question[0]}}</p>
+                <p>{{question[loop.index - 1]}}</p>
                 <p><input type='text' name='input{{loop.index - 1}}' value='{{inputs}}'></p>
             {% endfor %}
         {% endif %}
