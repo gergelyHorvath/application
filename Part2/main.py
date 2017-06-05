@@ -192,7 +192,7 @@ def save_new_applicant():
     choice = [_input for _input in request.args.values()]
     try:
         choice[-1] = int(choice[-1])
-    except:
+    except ValueError:
         message = 'The application code must be an integer!'
         return render_template('errors.html', message=message)
     app_codes = [code[0] for code in dm.run_query("SELECT application_code FROM applicants")]
@@ -204,6 +204,32 @@ def save_new_applicant():
     INSERT INTO applicants (first_name, last_name, phone_number, email, application_code)
     VALUES (%s, %s, %s, %s, %s);"""
     dm.run_query(sql_query, variables=choice, with_reurnvalue=False)
+    return redirect('/full-tables/print?radio=applicants')
+
+
+@app.route('/delete-applicant')
+def delete_applicant():
+    question = ('Enter application code to delete applicant:',)
+    text = ('',)
+    path_to_go = '/delete-applicant/commit'
+    return render_template('input.html', question=question, text=text, path_to_go=path_to_go)
+
+
+@app.route('/delete-applicant/commit')
+def delete_applicant_from_db():
+    try:
+        choice = int(request.args['input0'])
+    except ValueError:
+        message = 'The application code must be an integer!'
+        return render_template('errors.html', message=message)
+    app_codes = [code[0] for code in dm.run_query("SELECT application_code FROM applicants")]
+    if choice not in app_codes:
+        message = 'There is no applicant in the database with the application code: {}'.format(choice)
+        return render_template('errors.html', message=message)
+    sql_query = """
+    DELETE FROM applicants
+    WHERE application_code = %s;"""
+    dm.run_query(sql_query, variables=(choice,), with_reurnvalue=False)
     return redirect('/full-tables/print?radio=applicants')
 
 
