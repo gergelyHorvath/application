@@ -28,7 +28,7 @@ def print_menu():
     Please press button to activate feature:
 
     0 - List full table
-    1 - List the names of the mentors or app
+    1 - List the names of the mentors
     2 - List the nickname of the mentors from a specific city
     3 - Find an applicant by first name
     4 - Find an applicant by e-mail

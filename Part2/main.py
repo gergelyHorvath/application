@@ -1,5 +1,5 @@
 import data_manager as dm
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
@@ -89,6 +89,32 @@ def applicants_and_mentors():
     title = 'Applicants and mentors page'
     header = ('Applicant First Name', 'Application Code', 'Mentor First Name', 'Last Name')
     return render_template('print_table.html', title=title, header=header, table=table)
+
+
+# Queries from the previous assignment
+
+
+@app.route('/full-tables')
+def full_tables():
+    question = 'List all the:'
+    radio = ['mentors', 'applicants']
+    path_to_go = '/full-tables/print' 
+    return render_template('input.html', question=question, radio=radio, path_to_go=path_to_go)
+
+
+@app.route('/full-tables/print')
+def print_full_tables():
+    choice = request.args['radio']
+    sql_query = """
+    SELECT * FROM {};""".format(choice)
+    table = dm.run_query(sql_query)
+    title = 'List all the {}'.format(choice)
+    if choice == 'mentors':
+        header = ('ID', 'First Name', 'Last Name', 'Nick', 'Phone number', 'eMail', 'City', 'Favourite Number')
+    else:
+        header = ('ID', 'First Name', 'Last Name', 'Phone number', 'eMail', 'Application Code')
+    return render_template('print_table.html', title=title, header=header, table=table)
+
 
 
 if __name__ == '__main__':
