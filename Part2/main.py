@@ -116,6 +116,25 @@ def print_full_tables():
     return render_template('print_table.html', title=title, header=header, table=table)
 
 
+@app.route('/nicks-from-city')
+def nicks_from_city():
+    cities = dm.run_query("SELECT DISTINCT city FROM mentors;")
+    question = 'Select a city:'
+    radio = [city[0] for city in cities]
+    path_to_go = '/nicks-from-city/print'
+    return render_template('input.html', question=question, radio=radio, path_to_go=path_to_go)
+
+
+@app.route('/nicks-from-city/print')
+def print_nicks_from_city():
+    choice = request.args['radio']
+    sql_query = """
+    SELECT nick_name FROM mentors
+    WHERE city='{}'""".format(choice)
+    table = dm.run_query(sql_query)
+    title = 'All the mentors from {}'.format(choice)
+    header = ('Nick Name',)
+    return render_template('print_table.html', title=title, header=header, table=table)
 
 if __name__ == '__main__':
     app.run(debug=True)
