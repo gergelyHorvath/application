@@ -15,11 +15,21 @@
 
     <form action='{{path_to_go}}'>
         
-        <p>{{question}}</p>
-        {% for option in radio %}
-            <p><input type='radio' name='radio' value='{{option}}'>{{option}}</p>
-        {% endfor %}
-            <p><input type='submit' value='Submit'></p>    
+        {% if radio %}
+                <p>{{question[0]}}</p>
+            {% for option in radio %}
+                <p><input type='radio' name='radio' value='{{option}}'>{{option}}</p>
+            {% endfor %}
+        {% endif %}
+        
+        {% if text %}
+            {% for inputs in text %}
+                <p>{{question[0]}}</p>
+                <p><input type='text' name='input{{loop.index - 1}}' value='{{inputs}}'></p>
+            {% endfor %}
+        {% endif %}
+
+                <p><input type='submit' value='Submit'></p>    
     
     </form>
     

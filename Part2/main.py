@@ -79,7 +79,7 @@ def applicants():
 @app.route('/applicants-and-mentors')
 def applicants_and_mentors():
     sql_query = """
-    SELECT a.first_name, a.application_code, COALESCE(m.first_name, 'No mentor yet'), COALESCE(m.last_name, 'No mentor yet')
+    SELECT a.first_name, a.application_code, COALESCE(m.first_name, 'No mentor yet'), COALESCE(m.last_name, 'None yet')
         FROM ((applicants a LEFT OUTER JOIN applicants_mentors a_m
         ON (a.id = a_m.applicant_id))
             LEFT OUTER JOIN mentors m
@@ -96,9 +96,9 @@ def applicants_and_mentors():
 
 @app.route('/full-tables')
 def full_tables():
-    question = 'List all the:'
+    question = ('List all the:',)
     radio = ['mentors', 'applicants']
-    path_to_go = '/full-tables/print' 
+    path_to_go = '/full-tables/print'
     return render_template('input.html', question=question, radio=radio, path_to_go=path_to_go)
 
 
@@ -119,7 +119,7 @@ def print_full_tables():
 @app.route('/nicks-from-city')
 def nicks_from_city():
     cities = dm.run_query("SELECT DISTINCT city FROM mentors;")
-    question = 'Select a city:'
+    question = ('Select a city:',)
     radio = [city[0] for city in cities]
     path_to_go = '/nicks-from-city/print'
     return render_template('input.html', question=question, radio=radio, path_to_go=path_to_go)
@@ -130,11 +130,52 @@ def print_nicks_from_city():
     choice = request.args['radio']
     sql_query = """
     SELECT nick_name FROM mentors
-    WHERE city='{}'""".format(choice)
+    WHERE city='{}';""".format(choice)
     table = dm.run_query(sql_query)
     title = 'All the mentors from {}'.format(choice)
     header = ('Nick Name',)
     return render_template('print_table.html', title=title, header=header, table=table)
+
+
+@app.route('/applicant-by-first-name')
+def app_by_fn():
+    question = ('Search applicants by first name :',)
+    text = ('Carol',)
+    path_to_go = '/applicant-by-first-name/print'
+    return render_template('input.html', question=question, text=text, path_to_go=path_to_go)
+
+
+@app.route('/applicant-by-first-name/print')
+def print_app_by_fn():
+    choice = request.args['input0']
+    sql_query = """
+    SELECT CONCAT (first_name,' ', last_name) AS full_name, phone_number FROM applicants
+    WHERE first_name ILIKE '%{}%';""".format(choice)
+    table = dm.run_query(sql_query)
+    title = 'Applicants with the first name: {}'.format(choice)
+    header = ('Name', 'Phone Number')
+    return render_template('print_table.html', title=title, header=header, table=table)
+
+
+@app.route('/applicant-by-email')
+def app_by_mail():
+    question = ('Search applicants by eMail :',)
+    text = ('@adipiscingenimmi.edu',)
+    path_to_go = '/applicant-by-email/print'
+    return render_template('input.html', question=question, text=text, path_to_go=path_to_go)
+
+
+@app.route('/applicant-by-email/print')
+def print_app_by_mail():
+    choice = request.args['input0']
+    sql_query = """
+    SELECT CONCAT (first_name,' ', last_name) AS full_name, phone_number FROM applicants
+    WHERE email ILIKE '%{}%';""".format(choice)
+    table = dm.run_query(sql_query)
+    title = 'Applicants with their email adress containing {}'.format(choice)
+    header = ('Name', 'Phone Number')
+    return render_template('print_table.html', title=title, header=header, table=table)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
