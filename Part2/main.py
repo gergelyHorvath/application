@@ -79,7 +79,7 @@ def applicants():
 @app.route('/applicants-and-mentors')
 def applicants_and_mentors():
     sql_query = """
-    SELECT a.first_name, a.application_code, m.first_name, m.last_name
+    SELECT a.first_name, a.application_code, COALESCE(m.first_name, 'No mentor yet'), COALESCE(m.last_name, 'No mentor yet')
         FROM ((applicants a LEFT OUTER JOIN applicants_mentors a_m
         ON (a.id = a_m.applicant_id))
             LEFT OUTER JOIN mentors m

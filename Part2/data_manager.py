@@ -23,6 +23,3 @@ def run_query(sql_query):
         if connection:
             connection.close()
     return data_table
-
-# sql_q = "select * from mentors"
-# print(run_query(sql_q))
